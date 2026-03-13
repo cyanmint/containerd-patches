@@ -1,0 +1,38 @@
+diff --git a/core/runtime/v2/shim_manager.go b/core/runtime/v2/shim_manager.go
+index e871a37..633ed36 100644
+--- a/core/runtime/v2/shim_manager.go
++++ b/core/runtime/v2/shim_manager.go
+@@ -33,6 +33,7 @@ import (
+ 	"github.com/containerd/plugin/registry"
+ 	"github.com/containerd/typeurl/v2"
+ 
++	"github.com/containerd/containerd/v2/defaults"
+ 	"github.com/containerd/containerd/v2/core/containers"
+ 	"github.com/containerd/containerd/v2/core/events/exchange"
+ 	"github.com/containerd/containerd/v2/core/metadata"
+@@ -381,6 +382,25 @@ func (m *ShimManager) resolveRuntimePath(runtime string) (string, error) {
+ 		cmdPath = binaryPath
+ 	}
+ 
++	// If a path prefix is set (via --prefix), search the prefixed bin
++	// directories before falling back to the system PATH.  This ensures that
++	// when containerd is started with e.g. --prefix /data/local/containerd the
++	// shim from /data/local/containerd/usr/bin/ is preferred over any shim
++	// found in the system PATH.
++	if cmdPath == "" && defaults.PathPrefix != "" {
++		for _, dir := range []string{
++			filepath.Join(defaults.PathPrefix, "usr", "local", "bin"),
++			filepath.Join(defaults.PathPrefix, "usr", "bin"),
++			filepath.Join(defaults.PathPrefix, "bin"),
++		} {
++			testPath := filepath.Join(dir, name)
++			if _, serr := os.Stat(testPath); serr == nil {
++				cmdPath = testPath
++				break
++			}
++		}
++	}
++
+ 	if cmdPath == "" {
+ 		if cmdPath, lerr = exec.LookPath(name); lerr != nil {
+ 			if eerr, ok := lerr.(*exec.Error); ok {

@@ -1,0 +1,13 @@
+diff --git a/pkg/cio/io.go b/pkg/cio/io.go
+index d04dcc8..5b6bac6 100644
+--- a/pkg/cio/io.go
++++ b/pkg/cio/io.go
+@@ -139,7 +139,7 @@ func NewCreator(opts ...Opt) Creator {
+ 		opt(streams)
+ 	}
+ 	if streams.FIFODir == "" {
+-		streams.FIFODir = defaults.DefaultFIFODir
++		streams.FIFODir = defaults.Prefix(defaults.DefaultFIFODir)
+ 	}
+ 	return func(id string) (IO, error) {
+ 		fifos, err := NewFIFOSetInDir(streams.FIFODir, id, streams.Terminal)

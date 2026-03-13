@@ -1,0 +1,131 @@
+diff --git a/cmd/containerd/command/config.go b/cmd/containerd/command/config.go
+index 2e6d7fc..c8ac2b8 100644
+--- a/cmd/containerd/command/config.go
++++ b/cmd/containerd/command/config.go
+@@ -75,8 +75,8 @@ func outputConfig(ctx context.Context, config *srvconfig.Config) error {
+ 	return toml.NewEncoder(os.Stdout).SetIndentTables(true).Encode(config)
+ }
+ 
+-func defaultConfig() *srvconfig.Config {
+-	return platformAgnosticDefaultConfig()
++func defaultConfigWithPrefix(prefix string) *srvconfig.Config {
++	return platformAgnosticDefaultConfig(prefix)
+ }
+ 
+ var configCommand = &cli.Command{
+@@ -88,7 +88,7 @@ var configCommand = &cli.Command{
+ 			Usage: "See the output of the default config",
+ 			Action: func(cliContext *cli.Context) error {
+ 				ctx := cliContext.Context
+-				return outputConfig(ctx, defaultConfig())
++				return outputConfig(ctx, defaultConfigWithPrefix(cliContext.String("prefix")))
+ 			},
+ 		},
+ 		{
+@@ -106,7 +106,7 @@ var configCommand = &cli.Command{
+ }
+ 
+ func dumpConfig(cliContext *cli.Context) error {
+-	config := defaultConfig()
++	config := defaultConfigWithPrefix(cliContext.String("prefix"))
+ 	ctx := cliContext.Context
+ 	if err := srvconfig.LoadConfig(ctx, cliContext.String("config"), config); err != nil && !os.IsNotExist(err) {
+ 		return err
+@@ -125,34 +125,40 @@ func dumpConfig(cliContext *cli.Context) error {
+ 	return outputConfig(ctx, config)
+ }
+ 
+-func platformAgnosticDefaultConfig() *srvconfig.Config {
++func platformAgnosticDefaultConfig(prefix string) *srvconfig.Config {
++	pfx := func(path string) string {
++		if prefix == "" {
++			return path
++		}
++		return filepath.Join(prefix, path)
++	}
+ 	return &srvconfig.Config{
+ 		Version: version.ConfigVersion,
+-		Root:    defaults.DefaultRootDir,
+-		State:   defaults.DefaultStateDir,
++		Root:    pfx(defaults.DefaultRootDir),
++		State:   pfx(defaults.DefaultStateDir),
+ 		GRPC: srvconfig.GRPCConfig{
+-			Address:        defaults.DefaultAddress,
++			Address:        pfx(defaults.DefaultAddress),
+ 			MaxRecvMsgSize: defaults.DefaultMaxRecvMsgSize,
+ 			MaxSendMsgSize: defaults.DefaultMaxSendMsgSize,
+ 		},
+ 		DisabledPlugins:  []string{},
+ 		RequiredPlugins:  []string{},
+-		StreamProcessors: streamProcessors(),
+-		Imports:          []string{defaults.DefaultConfigIncludePattern},
++		StreamProcessors: streamProcessors(pfx(defaults.DefaultConfigDir)),
++		Imports:          []string{pfx(defaults.DefaultConfigIncludePattern)},
+ 	}
+ }
+ 
+-func streamProcessors() map[string]srvconfig.StreamProcessor {
++func streamProcessors(configDir string) map[string]srvconfig.StreamProcessor {
+ 	const (
+ 		ctdDecoder = "ctd-decoder"
+ 		basename   = "io.containerd.ocicrypt.decoder.v1"
+ 	)
+-	decryptionKeysPath := filepath.Join(defaults.DefaultConfigDir, "ocicrypt", "keys")
++	decryptionKeysPath := filepath.Join(configDir, "ocicrypt", "keys")
+ 	ctdDecoderArgs := []string{
+ 		"--decryption-keys-path", decryptionKeysPath,
+ 	}
+ 	ctdDecoderEnv := []string{
+-		"OCICRYPT_KEYPROVIDER_CONFIG=" + filepath.Join(defaults.DefaultConfigDir, "ocicrypt", "ocicrypt_keyprovider.conf"),
++		"OCICRYPT_KEYPROVIDER_CONFIG=" + filepath.Join(configDir, "ocicrypt", "ocicrypt_keyprovider.conf"),
+ 	}
+ 	return map[string]srvconfig.StreamProcessor{
+ 		basename + ".tar.gzip": {
+diff --git a/cmd/containerd/command/main.go b/cmd/containerd/command/main.go
+index 94d590a..7332c1e 100644
+--- a/cmd/containerd/command/main.go
++++ b/cmd/containerd/command/main.go
+@@ -118,6 +118,10 @@ can be used and modified as necessary as a custom configuration.`
+ 			Name:  "state",
+ 			Usage: "containerd state directory",
+ 		},
++		&cli.StringFlag{
++			Name:  "prefix",
++			Usage: "Prefix directory for all containerd default paths",
++		},
+ 	}
+ 	app.Flags = append(app.Flags, serviceFlags()...)
+ 	app.Commands = []*cli.Command{
+@@ -130,12 +134,21 @@ can be used and modified as necessary as a custom configuration.`
+ 			return cli.ShowCommandHelp(cliContext, args.First())
+ 		}
+ 
++		prefix := cliContext.String("prefix")
++		// Set PathPrefix before any default-path computation so that all
++		// subsystems (including plugins loaded later) see the same prefix.
++		defaults.PathPrefix = prefix
++		// On devices without /etc/resolv.conf (e.g. Android/Termux), Go's
++		// DNS resolver falls back to unreachable defaults.  Override it to
++		// use the nameservers from PREFIX/etc/resolv.conf instead.
++		defaults.ConfigureResolver()
++
+ 		var (
+ 			start       = time.Now()
+ 			signals     = make(chan os.Signal, 2048)
+ 			serverC     = make(chan *server.Server, 1)
+ 			ctx, cancel = context.WithCancel(cliContext.Context)
+-			config      = defaultConfig()
++			config      = defaultConfigWithPrefix(prefix)
+ 		)
+ 
+ 		defer cancel()
+@@ -143,6 +156,9 @@ can be used and modified as necessary as a custom configuration.`
+ 		// Only try to load the config if it either exists, or the user explicitly
+ 		// told us to load this path.
+ 		configPath := cliContext.String("config")
++		if prefix != "" && !cliContext.IsSet("config") {
++			configPath = filepath.Join(prefix, defaults.DefaultConfigDir, "config.toml")
++		}
+ 		_, err := os.Stat(configPath)
+ 		if !os.IsNotExist(err) || cliContext.IsSet("config") {
+ 			if err := srvconfig.LoadConfig(ctx, configPath, config); err != nil {

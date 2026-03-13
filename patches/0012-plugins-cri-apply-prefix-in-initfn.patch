@@ -1,0 +1,36 @@
+diff --git a/plugins/cri/images/plugin.go b/plugins/cri/images/plugin.go
+index b5a289d..d9eacd7 100644
+--- a/plugins/cri/images/plugin.go
++++ b/plugins/cri/images/plugin.go
+@@ -70,6 +70,11 @@ func init() {
+ 					config.Registry.ConfigPath = "/etc/containerd/certs.d:/etc/docker/certs.d"
+ 				}
+ 			}
++			// Apply PathPrefix to any registry path that is still at its
++			// hardcoded default (i.e. was not explicitly set in the config file).
++			// This must run inside the InitFn because defaults.PathPrefix is
++			// set in main() after package init() functions run.
++			criconfig.ApplyPrefixToImageDefaults(&config)
+ 
+ 			if warnings, err := criconfig.ValidateImageConfig(ic.Context, &config); err != nil {
+ 				return nil, fmt.Errorf("invalid cri image config: %w", err)
+diff --git a/plugins/cri/runtime/plugin.go b/plugins/cri/runtime/plugin.go
+index d9c382a..5cf31e6 100644
+--- a/plugins/cri/runtime/plugin.go
++++ b/plugins/cri/runtime/plugin.go
+@@ -74,6 +74,15 @@ func initCRIRuntime(ic *plugin.InitContext) (interface{}, error) {
+ 		}
+ 	}
+ 
++	// Apply PathPrefix to any CNI/CDI path that is still at its hardcoded
++	// default (i.e. was not explicitly set in the config file).  This runs
++	// after ValidateRuntimeConfig so that the deprecated bin_dir->bin_dirs
++	// migration happens first (the migration compares against the raw default;
++	// if we prefixed before that, the comparison would fail when both bin_dir
++	// and a prefix are in use).  It runs inside the InitFn because
++	// defaults.PathPrefix is set in main() after package init() functions.
++	criconfig.ApplyPrefixToRuntimeDefaults(pluginConfig)
++
+ 	// For backward compatibility, we have to keep the rootDir and stateDir the same as before.
+ 	containerdRootDir := filepath.Dir(ic.Properties[plugins.PropertyRootDir])
+ 	rootDir := filepath.Join(containerdRootDir, "io.containerd.grpc.v1.cri")
