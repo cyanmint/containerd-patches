@@ -70,13 +70,13 @@ jobs:
           /tmp/bin/containerd --help | grep -q "\-\-prefix" && \
             echo "containerd: --prefix flag present" || \
             { echo "containerd: --prefix flag MISSING"; exit 1; }
-          /tmp/bin/containerd --help | grep -q "\-p," && \
+          /tmp/bin/containerd --help | grep -q ", -p" && \
             echo "containerd: -p shorthand present" || \
             { echo "containerd: -p shorthand MISSING"; exit 1; }
           /tmp/bin/ctr --help | grep -q "\-\-prefix" && \
             echo "ctr: --prefix flag present" || \
             { echo "ctr: --prefix flag MISSING"; exit 1; }
-          /tmp/bin/ctr --help | grep -q "\-p," && \
+          /tmp/bin/ctr --help | grep -q ", -p" && \
             echo "ctr: -p shorthand present" || \
             { echo "ctr: -p shorthand MISSING"; exit 1; }
 
