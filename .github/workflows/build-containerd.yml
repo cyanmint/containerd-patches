@@ -10,8 +10,16 @@ permissions:
 
 jobs:
   build:
-    name: Apply patches and build
-    runs-on: ubuntu-latest
+    name: Build (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
 
     steps:
       - name: Check out patch repository
@@ -57,18 +65,32 @@ jobs:
           go build -v -o /tmp/bin/containerd-shim-runc-v2 ./cmd/containerd-shim-runc-v2
           echo "shim binary: $(file /tmp/bin/containerd-shim-runc-v2)"
 
-      - name: Smoke-test --prefix flag
+      - name: Smoke-test --prefix / -p flag
         run: |
           /tmp/bin/containerd --help | grep -q "\-\-prefix" && \
             echo "containerd: --prefix flag present" || \
             { echo "containerd: --prefix flag MISSING"; exit 1; }
+          /tmp/bin/containerd --help | grep -q "\-p," && \
+            echo "containerd: -p shorthand present" || \
+            { echo "containerd: -p shorthand MISSING"; exit 1; }
           /tmp/bin/ctr --help | grep -q "\-\-prefix" && \
             echo "ctr: --prefix flag present" || \
             { echo "ctr: --prefix flag MISSING"; exit 1; }
+          /tmp/bin/ctr --help | grep -q "\-p," && \
+            echo "ctr: -p shorthand present" || \
+            { echo "ctr: -p shorthand MISSING"; exit 1; }
+
+      - name: Stage runc→crun wrapper in artifact bin dir
+        run: |
+          # Install the repo's bin/runc wrapper alongside the built binaries so
+          # that containerd-shim-runc-v2 uses crun as the OCI runtime.
+          cp "${GITHUB_WORKSPACE}/bin/runc" /tmp/bin/runc
+          chmod +x /tmp/bin/runc
+          echo "runc wrapper installed: $(ls -lh /tmp/bin/runc)"
 
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: containerd-prefix-binaries
+          name: containerd-prefix-binaries-${{ matrix.arch }}
           path: /tmp/bin/
           retention-days: 7

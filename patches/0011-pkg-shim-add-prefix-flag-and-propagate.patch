@@ -1,5 +1,5 @@
 diff --git a/pkg/shim/shim.go b/pkg/shim/shim.go
-index 2f93203..bea2388 100644
+index 2f93203..db700e6 100644
 --- a/pkg/shim/shim.go
 +++ b/pkg/shim/shim.go
 @@ -33,6 +33,7 @@ import (
@@ -18,11 +18,12 @@ index 2f93203..bea2388 100644
  	action               string
  )
  
-@@ -158,9 +160,16 @@ func parseFlags() {
+@@ -158,9 +160,17 @@ func parseFlags() {
  	flag.StringVar(&containerdBinaryFlag, "publish-binary", "",
  		fmt.Sprintf("path to publish binary (used for publishing events), but %s will ignore this flag, please use the %s env", os.Args[0], ttrpcAddressEnv),
  	)
 +	flag.StringVar(&prefixFlag, "prefix", "", "prefix directory for all default paths")
++	flag.StringVar(&prefixFlag, "p", "", "prefix directory for all default paths (shorthand)")
  
  	flag.Parse()
  	action = flag.Arg(0)

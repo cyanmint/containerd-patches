@@ -1,0 +1,6 @@
+#!/bin/sh
+# runc → crun pass-through shim
+# Drop-in replacement for the runc OCI runtime that delegates to crun.
+# Install this as "runc" on PATH (or use --runc-binary) so that
+# containerd-shim-runc-v2 uses crun instead of runc.
+exec crun "$@"

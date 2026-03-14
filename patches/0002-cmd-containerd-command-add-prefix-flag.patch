@@ -1,8 +1,8 @@
 diff --git a/cmd/containerd/command/config.go b/cmd/containerd/command/config.go
-index 2e6d7fc..c8ac2b8 100644
+index 2871c2b..2d082a5 100644
 --- a/cmd/containerd/command/config.go
 +++ b/cmd/containerd/command/config.go
-@@ -75,8 +75,8 @@ func outputConfig(ctx context.Context, config *srvconfig.Config) error {
+@@ -78,8 +78,8 @@ func outputConfig(ctx context.Context, config *srvconfig.Config) error {
  	return toml.NewEncoder(os.Stdout).SetIndentTables(true).Encode(config)
  }
  
@@ -13,7 +13,7 @@ index 2e6d7fc..c8ac2b8 100644
  }
  
  var configCommand = &cli.Command{
-@@ -88,7 +88,7 @@ var configCommand = &cli.Command{
+@@ -91,7 +91,7 @@ var configCommand = &cli.Command{
  			Usage: "See the output of the default config",
  			Action: func(cliContext *cli.Context) error {
  				ctx := cliContext.Context
@@ -22,16 +22,16 @@ index 2e6d7fc..c8ac2b8 100644
  			},
  		},
  		{
-@@ -106,7 +106,7 @@ var configCommand = &cli.Command{
+@@ -109,7 +109,7 @@ var configCommand = &cli.Command{
  }
  
  func dumpConfig(cliContext *cli.Context) error {
 -	config := defaultConfig()
 +	config := defaultConfigWithPrefix(cliContext.String("prefix"))
  	ctx := cliContext.Context
- 	if err := srvconfig.LoadConfig(ctx, cliContext.String("config"), config); err != nil && !os.IsNotExist(err) {
- 		return err
-@@ -125,34 +125,40 @@ func dumpConfig(cliContext *cli.Context) error {
+ 
+ 	g := registry.Graph(func(*plugin.Registration) bool { return false })
+@@ -123,34 +123,40 @@ func dumpConfig(cliContext *cli.Context) error {
  	return outputConfig(ctx, config)
  }
  
@@ -82,21 +82,22 @@ index 2e6d7fc..c8ac2b8 100644
  	return map[string]srvconfig.StreamProcessor{
  		basename + ".tar.gzip": {
 diff --git a/cmd/containerd/command/main.go b/cmd/containerd/command/main.go
-index 94d590a..7332c1e 100644
+index 3d03d38..03042a6 100644
 --- a/cmd/containerd/command/main.go
 +++ b/cmd/containerd/command/main.go
-@@ -118,6 +118,10 @@ can be used and modified as necessary as a custom configuration.`
+@@ -122,6 +122,11 @@ can be used and modified as necessary as a custom configuration.`
  			Name:  "state",
  			Usage: "containerd state directory",
  		},
 +		&cli.StringFlag{
-+			Name:  "prefix",
-+			Usage: "Prefix directory for all containerd default paths",
++			Name:    "prefix",
++			Aliases: []string{"p"},
++			Usage:   "Prefix directory for all containerd default paths",
 +		},
  	}
  	app.Flags = append(app.Flags, serviceFlags()...)
  	app.Commands = []*cli.Command{
-@@ -130,12 +134,21 @@ can be used and modified as necessary as a custom configuration.`
+@@ -134,12 +139,21 @@ can be used and modified as necessary as a custom configuration.`
  			return cli.ShowCommandHelp(cliContext, args.First())
  		}
  
@@ -119,7 +120,7 @@ index 94d590a..7332c1e 100644
  		)
  
  		defer cancel()
-@@ -143,6 +156,9 @@ can be used and modified as necessary as a custom configuration.`
+@@ -147,6 +161,9 @@ can be used and modified as necessary as a custom configuration.`
  		// Only try to load the config if it either exists, or the user explicitly
  		// told us to load this path.
  		configPath := cliContext.String("config")
@@ -128,4 +129,4 @@ index 94d590a..7332c1e 100644
 +		}
  		_, err := os.Stat(configPath)
  		if !os.IsNotExist(err) || cliContext.IsSet("config") {
- 			if err := srvconfig.LoadConfig(ctx, configPath, config); err != nil {
+ 			g := registry.Graph(func(*plugin.Registration) bool { return false })
