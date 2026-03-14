@@ -3,4 +3,36 @@
 # Drop-in replacement for the runc OCI runtime that delegates to crun.
 # Install this as "runc" on PATH (or use --runc-binary) so that
 # containerd-shim-runc-v2 uses crun instead of runc.
-exec crun "$@"
+
+BINARY="crun"                   # crun
+INJECT_FLAG="--cgroup-manager"  # cgroup
+INJECT_VAL="disabled"           # disabled
+
+PREFIX=""
+for arg do
+    shift
+    case "$arg" in
+        -p|--prefix)
+            PREFIX="$1"
+            shift 
+            continue
+            ;;
+        *)
+            set -- "$@" "$arg"
+            ;;
+    esac
+done
+
+TARGET=""
+if [ -n "$PREFIX" ]; then
+    if [ -x "$PREFIX/usr/bin/$BINARY" ]; then
+        TARGET="$PREFIX/usr/bin/$BINARY"
+    elif [ -x "$PREFIX/bin/$BINARY" ]; then
+        TARGET="$PREFIX/bin/$BINARY"
+    fi
+fi
+[ -z "$TARGET" ] && TARGET="$BINARY"
+
+set -- "$@" "$INJECT_FLAG" "$INJECT_VAL"
+
+exec "$TARGET" "$@"
