@@ -2,8 +2,9 @@ name: Build containerd with --prefix support
 
 on:
   push:
-    branches: ["**"]
+    branches: ["default"]
   pull_request:
+    branches: ["default"]
 
 permissions:
   contents: read
