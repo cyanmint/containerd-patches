@@ -14,10 +14,10 @@ index d8eb641..0217cb0 100644
  				if err := cliContext.Set("address", defaults.Prefix(defaults.DefaultAddress)); err != nil {
 diff --git a/defaults/tls.go b/defaults/tls.go
 new file mode 100644
-index 0000000..5706f0c
+index 0000000..12cb027
 --- /dev/null
 +++ b/defaults/tls.go
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,112 @@
 +/*
 +   Copyright The containerd Authors.
 +
@@ -54,7 +54,7 @@ index 0000000..5706f0c
 +	if PathPrefix == "" {
 +		return
 +	}
-+	pool := buildCertPool()
++	pool := BuildCertPool()
 +	if pool == nil {
 +		return
 +	}
@@ -83,9 +83,17 @@ index 0000000..5706f0c
 +	"/system/etc/security/cacerts",
 +}
 +
-+// buildCertPool constructs an x509.CertPool from the prefixed CA stores.
-+// Returns nil if no certificates could be loaded.
-+func buildCertPool() *x509.CertPool {
++// BuildCertPool constructs an x509.CertPool from the prefixed CA stores
++// (Prefix("/etc/ssl/certs"), etc.).  Returns nil if PathPrefix is empty,
++// if no certificates can be found under the prefix, or if no certificates
++// could be parsed from the files that were found.
++// Callers that build a custom TLS config (e.g. registry resolvers) should
++// call this instead of relying on ConfigureTLS, which only patches
++// http.DefaultTransport.
++func BuildCertPool() *x509.CertPool {
++	if PathPrefix == "" {
++		return nil
++	}
 +	pool := x509.NewCertPool()
 +	loaded := false
 +
