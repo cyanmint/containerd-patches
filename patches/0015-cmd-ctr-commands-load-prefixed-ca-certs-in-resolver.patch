@@ -1,0 +1,24 @@
+diff --git a/cmd/ctr/commands/resolver.go b/cmd/ctr/commands/resolver.go
+index baf86f6..563a6e0 100644
+--- a/cmd/ctr/commands/resolver.go
++++ b/cmd/ctr/commands/resolver.go
+@@ -32,6 +32,7 @@ import (
+ 	"github.com/containerd/containerd/v2/core/remotes/docker"
+ 	"github.com/containerd/containerd/v2/core/remotes/docker/config"
+ 	"github.com/containerd/containerd/v2/core/transfer/registry"
++	"github.com/containerd/containerd/v2/defaults"
+ 	"github.com/containerd/containerd/v2/pkg/httpdbg"
+ 	"github.com/urfave/cli/v2"
+ )
+@@ -128,6 +129,11 @@ func resolverDefaultTLS(cliContext *cli.Context) (*tls.Config, error) {
+ 		if !tlsConfig.RootCAs.AppendCertsFromPEM(tlsRootData) {
+ 			return nil, fmt.Errorf("failed to load TLS CAs from %q: invalid data", tlsRootPath)
+ 		}
++	} else if pool := defaults.BuildCertPool(); pool != nil {
++		// When --prefix is set and --tlscacert is not, load CA certificates
++		// from the prefixed paths (needed on Android/Termux where system certs
++		// live under the prefix rather than at standard system paths).
++		tlsConfig.RootCAs = pool
+ 	}
+ 
+ 	tlsCertPath := cliContext.String("tlscert")

@@ -1,0 +1,132 @@
+diff --git a/cmd/ctr/app/main.go b/cmd/ctr/app/main.go
+index d8eb641..0217cb0 100644
+--- a/cmd/ctr/app/main.go
++++ b/cmd/ctr/app/main.go
+@@ -154,6 +154,9 @@ containerd CLI
+ 			// On devices without /etc/resolv.conf (e.g. Android/Termux), configure
+ 			// the Go DNS resolver to use nameservers from PREFIX/etc/resolv.conf.
+ 			defaults.ConfigureResolver()
++			// Configure TLS to trust CA certificates from the prefixed paths
++			// (needed on Android/Termux where system certs live under the prefix).
++			defaults.ConfigureTLS()
+ 			// Only override address if the user did not set it explicitly.
+ 			if !cliContext.IsSet("address") {
+ 				if err := cliContext.Set("address", defaults.Prefix(defaults.DefaultAddress)); err != nil {
+diff --git a/defaults/tls.go b/defaults/tls.go
+new file mode 100644
+index 0000000..12cb027
+--- /dev/null
++++ b/defaults/tls.go
+@@ -0,0 +1,112 @@
++/*
++   Copyright The containerd Authors.
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
++*/
++
++package defaults
++
++import (
++	"crypto/tls"
++	"crypto/x509"
++	"net/http"
++	"os"
++	"path/filepath"
++)
++
++// ConfigureTLS overrides http.DefaultTransport to trust CA certificates
++// loaded from Prefix("/etc/ssl/certs") and related paths under PathPrefix.
++// This is needed on devices (e.g. Android/Termux) where system CA
++// certificates are stored under the prefix rather than at standard
++// system paths.  It is a no-op when PathPrefix is empty or when no
++// certificates can be loaded from the prefix paths.
++func ConfigureTLS() {
++	if PathPrefix == "" {
++		return
++	}
++	pool := BuildCertPool()
++	if pool == nil {
++		return
++	}
++	if t, ok := http.DefaultTransport.(*http.Transport); ok {
++		clone := t.Clone()
++		clone.TLSClientConfig = &tls.Config{
++			RootCAs:    pool,
++			MinVersion: tls.VersionTLS12,
++		}
++		http.DefaultTransport = clone
++	}
++}
++
++// prefixedCertFiles is the list of CA-bundle files to try, relative to PathPrefix.
++var prefixedCertFiles = []string{
++	"/etc/ssl/certs/ca-certificates.crt",
++	"/etc/ssl/cert.pem",
++	"/etc/pki/tls/certs/ca-bundle.crt",
++	"/etc/ssl/ca-bundle.pem",
++	"/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem",
++}
++
++// prefixedCertDirs is the list of directories whose PEM/CRT files are loaded.
++var prefixedCertDirs = []string{
++	"/etc/ssl/certs",
++	"/system/etc/security/cacerts",
++}
++
++// BuildCertPool constructs an x509.CertPool from the prefixed CA stores
++// (Prefix("/etc/ssl/certs"), etc.).  Returns nil if PathPrefix is empty,
++// if no certificates can be found under the prefix, or if no certificates
++// could be parsed from the files that were found.
++// Callers that build a custom TLS config (e.g. registry resolvers) should
++// call this instead of relying on ConfigureTLS, which only patches
++// http.DefaultTransport.
++func BuildCertPool() *x509.CertPool {
++	if PathPrefix == "" {
++		return nil
++	}
++	pool := x509.NewCertPool()
++	loaded := false
++
++	for _, f := range prefixedCertFiles {
++		data, err := os.ReadFile(Prefix(f))
++		if err == nil && pool.AppendCertsFromPEM(data) {
++			loaded = true
++		}
++	}
++
++	for _, d := range prefixedCertDirs {
++		dir := Prefix(d)
++		entries, err := os.ReadDir(dir)
++		if err != nil {
++			continue
++		}
++		for _, entry := range entries {
++			if entry.IsDir() {
++				continue
++			}
++			ext := filepath.Ext(entry.Name())
++			if ext != ".pem" && ext != ".crt" {
++				continue
++			}
++			data, err := os.ReadFile(filepath.Join(dir, entry.Name()))
++			if err == nil && pool.AppendCertsFromPEM(data) {
++				loaded = true
++			}
++		}
++	}
++
++	if !loaded {
++		return nil
++	}
++	return pool
++}
