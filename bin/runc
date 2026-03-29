@@ -33,6 +33,6 @@ if [ -n "$PREFIX" ]; then
 fi
 [ -z "$TARGET" ] && TARGET="$BINARY"
 
-set -- "$@" "$INJECT_FLAG" "$INJECT_VAL"
+set -- "$INJECT_FLAG" "$INJECT_VAL" "$@"
 
 exec "$TARGET" "$@"

@@ -1,5 +1,5 @@
 diff --git a/cmd/ctr/app/main.go b/cmd/ctr/app/main.go
-index d03ba9b..d8eb641 100644
+index d03ba9b..0217cb0 100644
 --- a/cmd/ctr/app/main.go
 +++ b/cmd/ctr/app/main.go
 @@ -122,6 +122,11 @@ containerd CLI
@@ -14,7 +14,7 @@ index d03ba9b..d8eb641 100644
  	}
  	app.Commands = append([]*cli.Command{
  		plugins.Command,
-@@ -143,6 +148,19 @@ containerd CLI
+@@ -143,6 +148,22 @@ containerd CLI
  		deprecations.Command,
  	}, extraCmds...)
  	app.Before = func(cliContext *cli.Context) error {
@@ -24,6 +24,9 @@ index d03ba9b..d8eb641 100644
 +			// On devices without /etc/resolv.conf (e.g. Android/Termux), configure
 +			// the Go DNS resolver to use nameservers from PREFIX/etc/resolv.conf.
 +			defaults.ConfigureResolver()
++			// Configure TLS to trust CA certificates from the prefixed paths
++			// (needed on Android/Termux where system certs live under the prefix).
++			defaults.ConfigureTLS()
 +			// Only override address if the user did not set it explicitly.
 +			if !cliContext.IsSet("address") {
 +				if err := cliContext.Set("address", defaults.Prefix(defaults.DefaultAddress)); err != nil {
