@@ -1,5 +1,5 @@
 diff --git a/pkg/cio/io.go b/pkg/cio/io.go
-index d04dcc8..5b6bac6 100644
+index c020df8..ba9bfee 100644
 --- a/pkg/cio/io.go
 +++ b/pkg/cio/io.go
 @@ -139,7 +139,7 @@ func NewCreator(opts ...Opt) Creator {

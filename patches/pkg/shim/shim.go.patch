@@ -1,5 +1,5 @@
 diff --git a/pkg/shim/shim.go b/pkg/shim/shim.go
-index 2f93203..db700e6 100644
+index e57bf56..a824f33 100644
 --- a/pkg/shim/shim.go
 +++ b/pkg/shim/shim.go
 @@ -33,6 +33,7 @@ import (

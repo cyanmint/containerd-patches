@@ -1,5 +1,5 @@
 diff --git a/internal/cri/config/config_unix.go b/internal/cri/config/config_unix.go
-index b4ee9b0..67bf982 100644
+index 1c94ff5..bcf1697 100644
 --- a/internal/cri/config/config_unix.go
 +++ b/internal/cri/config/config_unix.go
 @@ -23,8 +23,18 @@ import (

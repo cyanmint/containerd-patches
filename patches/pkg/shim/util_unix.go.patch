@@ -1,8 +1,8 @@
 diff --git a/pkg/shim/util_unix.go b/pkg/shim/util_unix.go
-index 874aaf5..094c959 100644
+index d255d7f..7796e09 100644
 --- a/pkg/shim/util_unix.go
 +++ b/pkg/shim/util_unix.go
-@@ -73,7 +73,11 @@ func AdjustOOMScore(pid int) error {
+@@ -72,7 +72,11 @@ func AdjustOOMScore(pid int) error {
  	return nil
  }
  
@@ -15,7 +15,7 @@ index 874aaf5..094c959 100644
  
  // SocketAddress returns a socket address
  func SocketAddress(ctx context.Context, socketPath, id string, debug bool) (string, error) {
-@@ -86,7 +90,7 @@ func SocketAddress(ctx context.Context, socketPath, id string, debug bool) (stri
+@@ -85,7 +89,7 @@ func SocketAddress(ctx context.Context, socketPath, id string, debug bool) (stri
  		path = filepath.Join(path, "debug")
  	}
  	d := sha256.Sum256([]byte(path))

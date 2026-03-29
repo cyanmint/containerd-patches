@@ -1,5 +1,5 @@
 diff --git a/plugins/cri/images/plugin.go b/plugins/cri/images/plugin.go
-index b5a289d..d9eacd7 100644
+index 8be9b62..dfe1a34 100644
 --- a/plugins/cri/images/plugin.go
 +++ b/plugins/cri/images/plugin.go
 @@ -70,6 +70,11 @@ func init() {

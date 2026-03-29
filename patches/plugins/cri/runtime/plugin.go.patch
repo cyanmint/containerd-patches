@@ -1,8 +1,8 @@
 diff --git a/plugins/cri/runtime/plugin.go b/plugins/cri/runtime/plugin.go
-index d9c382a..5cf31e6 100644
+index b4ee60f..b8bf9aa 100644
 --- a/plugins/cri/runtime/plugin.go
 +++ b/plugins/cri/runtime/plugin.go
-@@ -74,6 +74,15 @@ func initCRIRuntime(ic *plugin.InitContext) (interface{}, error) {
+@@ -74,6 +74,15 @@ func initCRIRuntime(ic *plugin.InitContext) (any, error) {
  		}
  	}
  

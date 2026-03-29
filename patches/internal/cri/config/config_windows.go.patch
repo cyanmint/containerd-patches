@@ -1,5 +1,5 @@
 diff --git a/internal/cri/config/config_windows.go b/internal/cri/config/config_windows.go
-index 789d499..1fd6c54 100644
+index baa045a..526d449 100644
 --- a/internal/cri/config/config_windows.go
 +++ b/internal/cri/config/config_windows.go
 @@ -27,6 +27,15 @@ func defaultNetworkPluginBinDirs() []string {

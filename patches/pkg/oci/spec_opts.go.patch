@@ -1,8 +1,8 @@
 diff --git a/pkg/oci/spec_opts.go b/pkg/oci/spec_opts.go
-index 7b22f35..04cdcaf 100644
+index abc8e3d..1345772 100644
 --- a/pkg/oci/spec_opts.go
 +++ b/pkg/oci/spec_opts.go
-@@ -41,8 +41,10 @@ import (
+@@ -43,8 +43,10 @@ import (
  
  	"github.com/containerd/containerd/v2/core/containers"
  	"github.com/containerd/containerd/v2/core/content"

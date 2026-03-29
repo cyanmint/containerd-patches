@@ -38,7 +38,7 @@ jobs:
           PATCHES="${GITHUB_WORKSPACE}/patches"
           while IFS= read -r -d '' patch; do
             echo "==> Applying ${patch#"$PATCHES/"} ..."
-            patch -p1 --fuzz=3 < "$patch"
+            git apply --whitespace=fix "$patch"
           done < <(find "$PATCHES" -name "*.patch" -print0 | sort -z)
           echo "All patches applied successfully."
 

@@ -1,5 +1,5 @@
 diff --git a/cmd/containerd/command/config.go b/cmd/containerd/command/config.go
-index 2871c2b..2d082a5 100644
+index 28a2dfb..a8e6b69 100644
 --- a/cmd/containerd/command/config.go
 +++ b/cmd/containerd/command/config.go
 @@ -78,8 +78,8 @@ func outputConfig(ctx context.Context, config *srvconfig.Config) error {
