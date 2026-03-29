@@ -1,0 +1,16 @@
+diff --git a/plugins/cri/images/plugin.go b/plugins/cri/images/plugin.go
+index 8be9b62..dfe1a34 100644
+--- a/plugins/cri/images/plugin.go
++++ b/plugins/cri/images/plugin.go
+@@ -70,6 +70,11 @@ func init() {
+ 					config.Registry.ConfigPath = "/etc/containerd/certs.d:/etc/docker/certs.d"
+ 				}
+ 			}
++			// Apply PathPrefix to any registry path that is still at its
++			// hardcoded default (i.e. was not explicitly set in the config file).
++			// This must run inside the InitFn because defaults.PathPrefix is
++			// set in main() after package init() functions run.
++			criconfig.ApplyPrefixToImageDefaults(&config)
+ 
+ 			if warnings, err := criconfig.ValidateImageConfig(ic.Context, &config); err != nil {
+ 				return nil, fmt.Errorf("invalid cri image config: %w", err)

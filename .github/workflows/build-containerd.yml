@@ -36,10 +36,10 @@ jobs:
         run: |
           set -e
           PATCHES="${GITHUB_WORKSPACE}/patches"
-          for patch in "$PATCHES"/*.patch; do
-            echo "==> Applying $(basename "$patch") ..."
-            patch -p1 --fuzz=3 < "$patch"
-          done
+          while IFS= read -r -d '' patch; do
+            echo "==> Applying ${patch#"$PATCHES/"} ..."
+            git apply --whitespace=fix "$patch"
+          done < <(find "$PATCHES" -name "*.patch" -print0 | sort -z)
           echo "All patches applied successfully."
 
       - name: Set up Go

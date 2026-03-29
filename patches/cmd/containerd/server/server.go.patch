@@ -1,5 +1,5 @@
 diff --git a/cmd/containerd/server/server.go b/cmd/containerd/server/server.go
-index 6cc3c52..f736a62 100644
+index 08ea9ac..5f3626d 100644
 --- a/cmd/containerd/server/server.go
 +++ b/cmd/containerd/server/server.go
 @@ -93,12 +93,12 @@ func CreateTopLevelDirectories(config *srvconfig.Config) error {

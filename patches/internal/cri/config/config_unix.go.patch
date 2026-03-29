@@ -1,5 +1,5 @@
 diff --git a/internal/cri/config/config_unix.go b/internal/cri/config/config_unix.go
-index b4ee9b0..67bf982 100644
+index 1c94ff5..bcf1697 100644
 --- a/internal/cri/config/config_unix.go
 +++ b/internal/cri/config/config_unix.go
 @@ -23,8 +23,18 @@ import (
@@ -85,23 +85,3 @@ index b4ee9b0..67bf982 100644
 +		cfg.Registry.ConfigPath = defaults.Prefix(defaultRegistryConfDir) + ":" + defaults.Prefix(defaultDockerCertsDir)
 +	}
 +}
-diff --git a/internal/cri/config/config_windows.go b/internal/cri/config/config_windows.go
-index 789d499..1fd6c54 100644
---- a/internal/cri/config/config_windows.go
-+++ b/internal/cri/config/config_windows.go
-@@ -27,6 +27,15 @@ func defaultNetworkPluginBinDirs() []string {
- 	return []string{filepath.Join(os.Getenv("ProgramFiles"), "containerd", "cni", "bin")}
- }
- 
-+// ApplyPrefixToRuntimeDefaults is a no-op on Windows; CNI/CDI paths are not
-+// prefixed because they are constructed from ProgramFiles and are always
-+// user-configured on Windows.
-+func ApplyPrefixToRuntimeDefaults(_ *RuntimeConfig) {}
-+
-+// ApplyPrefixToImageDefaults is a no-op on Windows; registry paths are not
-+// set by default on Windows.
-+func ApplyPrefixToImageDefaults(_ *ImageConfig) {}
-+
- func DefaultImageConfig() ImageConfig {
- 	return ImageConfig{
- 		Snapshotter:            defaults.DefaultSnapshotter,

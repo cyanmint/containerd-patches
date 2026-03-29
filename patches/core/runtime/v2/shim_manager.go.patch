@@ -1,5 +1,5 @@
 diff --git a/core/runtime/v2/shim_manager.go b/core/runtime/v2/shim_manager.go
-index e871a37..633ed36 100644
+index 637da90..f88ea7e 100644
 --- a/core/runtime/v2/shim_manager.go
 +++ b/core/runtime/v2/shim_manager.go
 @@ -33,6 +33,7 @@ import (

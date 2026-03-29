@@ -1,17 +1,3 @@
-diff --git a/cmd/ctr/app/main.go b/cmd/ctr/app/main.go
-index d8eb641..0217cb0 100644
---- a/cmd/ctr/app/main.go
-+++ b/cmd/ctr/app/main.go
-@@ -154,6 +154,9 @@ containerd CLI
- 			// On devices without /etc/resolv.conf (e.g. Android/Termux), configure
- 			// the Go DNS resolver to use nameservers from PREFIX/etc/resolv.conf.
- 			defaults.ConfigureResolver()
-+			// Configure TLS to trust CA certificates from the prefixed paths
-+			// (needed on Android/Termux where system certs live under the prefix).
-+			defaults.ConfigureTLS()
- 			// Only override address if the user did not set it explicitly.
- 			if !cliContext.IsSet("address") {
- 				if err := cliContext.Set("address", defaults.Prefix(defaults.DefaultAddress)); err != nil {
 diff --git a/defaults/tls.go b/defaults/tls.go
 new file mode 100644
 index 0000000..12cb027
