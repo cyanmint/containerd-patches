@@ -19,7 +19,7 @@ index b3e360d..a5cf500 100644
  		// told us to load this path.
  		configPath := cliContext.String("config")
 +		if defaults.PathPrefix != "" && !cliContext.IsSet("config") {
-+			configPath = filepath.Join(defaults.PathPrefix, defaults.DefaultConfigDir, "config.toml")
++			configPath = filepath.Join(defaults.Prefix(defaults.DefaultConfigDir), "config.toml")
 +		}
  		_, err := os.Stat(configPath)
  		if !os.IsNotExist(err) || cliContext.IsSet("config") {
