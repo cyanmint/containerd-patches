@@ -1,60 +1,29 @@
 diff --git a/cmd/containerd/command/config.go b/cmd/containerd/command/config.go
-index 28a2dfb..a8e6b69 100644
+index 7bbb988..b6f9395 100644
 --- a/cmd/containerd/command/config.go
 +++ b/cmd/containerd/command/config.go
-@@ -78,8 +78,8 @@ func outputConfig(ctx context.Context, config *srvconfig.Config) error {
- 	return toml.NewEncoder(os.Stdout).SetIndentTables(true).Encode(config)
- }
- 
--func defaultConfig() *srvconfig.Config {
--	return platformAgnosticDefaultConfig()
-+func defaultConfigWithPrefix() *srvconfig.Config {
-+	return platformAgnosticDefaultConfig()
- }
- 
- var configCommand = &cli.Command{
-@@ -91,7 +91,7 @@ var configCommand = &cli.Command{
- 			Usage: "See the output of the default config",
- 			Action: func(cliContext *cli.Context) error {
- 				ctx := cliContext.Context
--				return outputConfig(ctx, defaultConfig())
-+				return outputConfig(ctx, defaultConfigWithPrefix())
- 			},
- 		},
- 		{
-@@ -109,7 +109,7 @@ var configCommand = &cli.Command{
- }
- 
- func dumpConfig(cliContext *cli.Context) error {
--	config := defaultConfig()
-+	config := defaultConfigWithPrefix()
- 	ctx := cliContext.Context
- 
- 	g := registry.Graph(func(*plugin.Registration) bool { return false })
-@@ -123,34 +123,40 @@ func dumpConfig(cliContext *cli.Context) error {
- 	return outputConfig(ctx, config)
- }
- 
--func platformAgnosticDefaultConfig() *srvconfig.Config {
-+func platformAgnosticDefaultConfig() *srvconfig.Config {
+@@ -126,15 +126,15 @@ func dumpConfig(cliContext *cli.Context) error {
+ func platformAgnosticDefaultConfig() *srvconfig.Config {
  	return &srvconfig.Config{
- 		Version: version.ConfigVersion,
--		Root:    defaults.DefaultRootDir,
--		State:   defaults.DefaultStateDir,
-+		Root:    defaults.Prefix(defaults.DefaultRootDir),
-+		State:   defaults.Prefix(defaults.DefaultStateDir),
- 		GRPC: srvconfig.GRPCConfig{
--			Address:        defaults.DefaultAddress,
-+			Address:        defaults.Prefix(defaults.DefaultAddress),
- 			MaxRecvMsgSize: defaults.DefaultMaxRecvMsgSize,
- 			MaxSendMsgSize: defaults.DefaultMaxSendMsgSize,
- 		},
+ 		Version:          version.ConfigVersion,
+-		Root:             defaults.DefaultRootDir,
+-		State:            defaults.DefaultStateDir,
++		Root:             defaults.Prefix(defaults.DefaultRootDir),
++		State:            defaults.Prefix(defaults.DefaultStateDir),
  		DisabledPlugins:  []string{},
  		RequiredPlugins:  []string{},
 -		StreamProcessors: streamProcessors(),
 -		Imports:          []string{defaults.DefaultConfigIncludePattern},
 +		StreamProcessors: streamProcessors(defaults.Prefix(defaults.DefaultConfigDir)),
 +		Imports:          []string{defaults.Prefix(defaults.DefaultConfigIncludePattern)},
+ 		Plugins: map[string]any{
+ 			"io.containerd.server.v1.grpc": map[string]any{
+-				"address":               defaults.DefaultAddress,
++				"address":               defaults.Prefix(defaults.DefaultAddress),
+ 				"max_recv_message_size": defaults.DefaultMaxRecvMsgSize,
+ 				"max_send_message_size": defaults.DefaultMaxSendMsgSize,
+ 			},
+@@ -142,17 +142,17 @@ func platformAgnosticDefaultConfig() *srvconfig.Config {
  	}
  }
  

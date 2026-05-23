@@ -1,16 +1,8 @@
 diff --git a/cmd/containerd-shim-runc-v2/manager/manager_linux.go b/cmd/containerd-shim-runc-v2/manager/manager_linux.go
-index 0e051a3..7025258 100644
+index eb9a4de..4a83aec 100644
 --- a/cmd/containerd-shim-runc-v2/manager/manager_linux.go
 +++ b/cmd/containerd-shim-runc-v2/manager/manager_linux.go
-@@ -39,6 +39,7 @@ import (
- 	"github.com/containerd/containerd/v2/cmd/containerd-shim-runc-v2/process"
- 	"github.com/containerd/containerd/v2/cmd/containerd-shim-runc-v2/runc"
- 	"github.com/containerd/containerd/v2/core/mount"
-+	"github.com/containerd/containerd/v2/defaults"
- 	"github.com/containerd/containerd/v2/pkg/namespaces"
- 	"github.com/containerd/containerd/v2/pkg/schedcore"
- 	"github.com/containerd/containerd/v2/pkg/shim"
-@@ -301,7 +305,7 @@ func (manager) Stop(ctx context.Context, id string) (shim.StopStatus, error) {
+@@ -316,7 +316,7 @@ func (manager) Stop(ctx context.Context, id string) (shim.StopStatus, error) {
  	if err != nil {
  		return shim.StopStatus{}, err
  	}
@@ -19,7 +11,7 @@ index 0e051a3..7025258 100644
  	if opts != nil && opts.Root != "" {
  		root = opts.Root
  	}
-@@ -353,6 +357,18 @@ func (m manager) Info(ctx context.Context, optionsR io.Reader) (*types.RuntimeIn
+@@ -368,6 +368,18 @@ func (m manager) Info(ctx context.Context, optionsR io.Reader) (*types.RuntimeIn
  
  	}
  	absBinary, err := exec.LookPath(binaryName)

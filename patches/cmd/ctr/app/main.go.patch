@@ -1,8 +1,8 @@
 diff --git a/cmd/ctr/app/main.go b/cmd/ctr/app/main.go
-index d03ba9b..0217cb0 100644
+index d03ba9b..8775da6 100644
 --- a/cmd/ctr/app/main.go
 +++ b/cmd/ctr/app/main.go
-@@ -143,6 +148,22 @@ containerd CLI
+@@ -143,6 +143,20 @@ containerd CLI
  		deprecations.Command,
  	}, extraCmds...)
  	app.Before = func(cliContext *cli.Context) error {

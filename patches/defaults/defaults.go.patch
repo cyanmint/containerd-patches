@@ -1,8 +1,8 @@
 diff --git a/defaults/defaults.go b/defaults/defaults.go
-index fcf3ec6..ee2aebd 100644
+index fcf3ec6..24cc0a8 100644
 --- a/defaults/defaults.go
 +++ b/defaults/defaults.go
-@@ -16,6 +16,24 @@
+@@ -16,6 +16,34 @@
  
  package defaults
  
@@ -13,7 +13,7 @@ index fcf3ec6..ee2aebd 100644
 +
 +// PathPrefix is an optional prefix prepended to all default paths.
 +// It is set once at process startup (from CTR_PREFIX or PREFIX env vars) and is
-+// never changed afterwards.  Code that computes default paths should call
++// never changed afterwards. Code that computes default paths should call
 +// Prefix() rather than hard-coding the base path.
 +var PathPrefix = pathPrefixFromEnv()
 +
@@ -24,8 +24,8 @@ index fcf3ec6..ee2aebd 100644
 +	return os.Getenv("PREFIX")
 +}
 +
-+// Prefix prepends PathPrefix to path.  If PathPrefix is empty the original
-+// path is returned unchanged.  An explicitly-configured value (i.e. one not
++// Prefix prepends PathPrefix to path. If PathPrefix is empty the original
++// path is returned unchanged. An explicitly-configured value (i.e. one not
 +// derived from a default) must never be passed through this function.
 +func Prefix(path string) string {
 +	if PathPrefix == "" {

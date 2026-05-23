@@ -1,19 +1,16 @@
 diff --git a/pkg/oci/spec_opts.go b/pkg/oci/spec_opts.go
-index abc8e3d..1345772 100644
+index afbf099..9450cc7 100644
 --- a/pkg/oci/spec_opts.go
 +++ b/pkg/oci/spec_opts.go
-@@ -43,8 +43,10 @@ import (
- 
- 	"github.com/containerd/containerd/v2/core/containers"
+@@ -45,6 +45,7 @@ import (
  	"github.com/containerd/containerd/v2/core/content"
-+
  	"github.com/containerd/containerd/v2/core/images"
  	"github.com/containerd/containerd/v2/core/mount"
 +	"github.com/containerd/containerd/v2/defaults"
+ 	"github.com/containerd/containerd/v2/internal/fsview"
  	"github.com/containerd/containerd/v2/pkg/namespaces"
  )
- 
-@@ -515,7 +517,7 @@ func WithHostHostsFile(_ context.Context, _ Client, _ *containers.Container, s *
+@@ -516,7 +517,7 @@ func WithHostHostsFile(_ context.Context, _ Client, _ *containers.Container, s *
  	s.Mounts = append(s.Mounts, specs.Mount{
  		Destination: "/etc/hosts",
  		Type:        "bind",
@@ -22,7 +19,7 @@ index abc8e3d..1345772 100644
  		Options:     []string{"rbind", "ro"},
  	})
  	return nil
-@@ -526,7 +528,7 @@ func WithHostResolvconf(_ context.Context, _ Client, _ *containers.Container, s
+@@ -527,7 +528,7 @@ func WithHostResolvconf(_ context.Context, _ Client, _ *containers.Container, s
  	s.Mounts = append(s.Mounts, specs.Mount{
  		Destination: "/etc/resolv.conf",
  		Type:        "bind",
@@ -31,7 +28,7 @@ index abc8e3d..1345772 100644
  		Options:     []string{"rbind", "ro"},
  	})
  	return nil
-@@ -537,7 +539,7 @@ func WithHostLocaltime(_ context.Context, _ Client, _ *containers.Container, s *
+@@ -538,7 +539,7 @@ func WithHostLocaltime(_ context.Context, _ Client, _ *containers.Container, s *
  	s.Mounts = append(s.Mounts, specs.Mount{
  		Destination: "/etc/localtime",
  		Type:        "bind",

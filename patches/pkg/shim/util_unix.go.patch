@@ -1,26 +1,22 @@
 diff --git a/pkg/shim/util_unix.go b/pkg/shim/util_unix.go
-index d255d7f..7796e09 100644
+index d8779c5..468cd20 100644
 --- a/pkg/shim/util_unix.go
 +++ b/pkg/shim/util_unix.go
-@@ -72,7 +72,11 @@ func AdjustOOMScore(pid int) error {
- 	return nil
- }
- 
--const socketRoot = defaults.DefaultStateDir
-+// socketRoot returns the effective default state directory for shim sockets,
-+// accounting for any configured PathPrefix.
-+func socketRoot() string {
-+	return defaults.Prefix(defaults.DefaultStateDir)
-+}
- 
- // SocketAddress returns a socket address
+@@ -76,7 +76,7 @@ func AdjustOOMScore(pid int) error {
+ //
+ // TODO: Consider deprecating for CreateSocketAddress
  func SocketAddress(ctx context.Context, socketPath, id string, debug bool) (string, error) {
-@@ -85,7 +89,7 @@ func SocketAddress(ctx context.Context, socketPath, id string, debug bool) (stri
- 		path = filepath.Join(path, "debug")
- 	}
- 	d := sha256.Sum256([]byte(path))
--	return fmt.Sprintf("unix://%s/%x", filepath.Join(socketRoot, "s"), d), nil
-+	return fmt.Sprintf("unix://%s/%x", filepath.Join(socketRoot(), "s"), d), nil
+-	return CreateSocketAddress(ctx, filepath.Join(defaults.DefaultStateDir, "s"), socketPath, id, debug)
++	return CreateSocketAddress(ctx, filepath.Join(defaults.Prefix(defaults.DefaultStateDir), "s"), socketPath, id, debug)
  }
  
- // AnonDialer returns a dialer for a socket
+ // CreateSocketAddress returns a shim socket address under socketRoot.
+@@ -306,7 +306,7 @@ func cleanupSockets(ctx context.Context) {
+ 	}
+ 	socketDir, _ := os.Readlink(socketDirLink)
+ 	if socketDir == "" {
+-		socketDir = filepath.Join(defaults.DefaultStateDir, "s")
++		socketDir = filepath.Join(defaults.Prefix(defaults.DefaultStateDir), "s")
+ 	}
+ 	if len(socketFlag) > 0 {
+ 		_ = RemoveSocket("unix://" + socketFlag)
