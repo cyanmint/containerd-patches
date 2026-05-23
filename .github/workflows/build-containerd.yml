@@ -2,7 +2,7 @@ name: Build containerd with env prefix support
 
 on:
   push:
-    branches: ["default"]
+    branches: ["default", "copilot/**"]
   pull_request:
     branches: ["default"]
 
