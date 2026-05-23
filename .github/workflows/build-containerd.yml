@@ -51,20 +51,33 @@ jobs:
       - name: Build containerd
         working-directory: /tmp/containerd
         run: |
-          go build -v -o /tmp/bin/containerd ./cmd/containerd
+          CGO_ENABLED=0 go build -v -trimpath -tags "netgo osusergo" -o /tmp/bin/containerd ./cmd/containerd
           echo "containerd binary: $(file /tmp/bin/containerd)"
 
       - name: Build ctr
         working-directory: /tmp/containerd
         run: |
-          go build -v -o /tmp/bin/ctr ./cmd/ctr
+          CGO_ENABLED=0 go build -v -trimpath -tags "netgo osusergo" -o /tmp/bin/ctr ./cmd/ctr
           echo "ctr binary: $(file /tmp/bin/ctr)"
 
       - name: Build containerd-shim-runc-v2
         working-directory: /tmp/containerd
         run: |
-          go build -v -o /tmp/bin/containerd-shim-runc-v2 ./cmd/containerd-shim-runc-v2
+          CGO_ENABLED=0 go build -v -trimpath -tags "netgo osusergo" -o /tmp/bin/containerd-shim-runc-v2 ./cmd/containerd-shim-runc-v2
           echo "shim binary: $(file /tmp/bin/containerd-shim-runc-v2)"
+
+      - name: Verify binaries are fully static
+        run: |
+          for bin in /tmp/bin/containerd /tmp/bin/ctr /tmp/bin/containerd-shim-runc-v2; do
+            echo "==> verifying $bin"
+            file "$bin"
+            out="$(ldd "$bin" 2>&1 || true)"
+            echo "$out"
+            echo "$out" | grep -Eq "not a dynamic executable|statically linked" || {
+              echo "ERROR: $bin is dynamically linked"
+              exit 1
+            }
+          done
 
       - name: Smoke-test prefix flags are removed
         run: |
