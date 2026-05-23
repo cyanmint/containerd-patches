@@ -1,0 +1,13 @@
+diff --git a/plugins/server/ttrpc/plugin.go b/plugins/server/ttrpc/plugin.go
+index 921538b..26d964d 100644
+--- a/plugins/server/ttrpc/plugin.go
++++ b/plugins/server/ttrpc/plugin.go
+@@ -47,7 +47,7 @@ func (c *config) SetAddress(s string) {
+ 
+ func init() {
+ 	// Keep the default the same for compatibility
+-	defaultAddress := defaults.DefaultAddress + ".ttrpc"
++	defaultAddress := defaults.Prefix(defaults.DefaultAddress) + ".ttrpc"
+ 	registry.Register(&plugin.Registration{
+ 		Type: plugins.ServerPlugin,
+ 		ID:   "ttrpc",

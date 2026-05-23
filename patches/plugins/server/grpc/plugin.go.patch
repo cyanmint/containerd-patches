@@ -1,0 +1,13 @@
+diff --git a/plugins/server/grpc/plugin.go b/plugins/server/grpc/plugin.go
+index 6c5b103..cdccb75 100644
+--- a/plugins/server/grpc/plugin.go
++++ b/plugins/server/grpc/plugin.go
+@@ -67,7 +67,7 @@ func init() {
+ 			plugins.MetricsPlugin,
+ 		},
+ 		Config: &config{
+-			Address:        defaults.DefaultAddress,
++			Address:        defaults.Prefix(defaults.DefaultAddress),
+ 			UID:            os.Geteuid(),
+ 			GID:            os.Getegid(),
+ 			MaxRecvMsgSize: defaults.DefaultMaxRecvMsgSize,

@@ -1,0 +1,17 @@
+diff --git a/cmd/containerd/server/server.go b/cmd/containerd/server/server.go
+index 60e4948..8a4b0d2 100644
+--- a/cmd/containerd/server/server.go
++++ b/cmd/containerd/server/server.go
+@@ -137,10 +137,10 @@ func New(ctx context.Context, config *srvconfig.Config) (*Server, error) {
+ 		ttrpcAddress = readString(config.Plugins, "io.containerd.server.v1.ttrpc", "address")
+ 	)
+ 	if grpcAddress == "" {
+-		grpcAddress = defaults.DefaultAddress
++		grpcAddress = defaults.Prefix(defaults.DefaultAddress)
+ 	}
+ 	if ttrpcAddress == "" {
+-		ttrpcAddress = defaults.DefaultAddress + ".ttrpc"
++		ttrpcAddress = defaults.Prefix(defaults.DefaultAddress) + ".ttrpc"
+ 	}
+ 	for _, r := range config.RequiredPlugins {
+ 		required[r] = struct{}{}
