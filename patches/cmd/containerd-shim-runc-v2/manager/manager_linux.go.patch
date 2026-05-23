@@ -1,7 +1,16 @@
 diff --git a/cmd/containerd-shim-runc-v2/manager/manager_linux.go b/cmd/containerd-shim-runc-v2/manager/manager_linux.go
-index eb9a4de..4a83aec 100644
+index eb9a4de..82bf0a9 100644
 --- a/cmd/containerd-shim-runc-v2/manager/manager_linux.go
 +++ b/cmd/containerd-shim-runc-v2/manager/manager_linux.go
+@@ -221,7 +221,7 @@ func (manager) Start(ctx context.Context, opts *bootapi.BootstrapParams) (_ *boo
+ 
+ 	socketDir := opts.GetSocketDir()
+ 	if socketDir == "" {
+-		socketDir = filepath.Join(defaults.DefaultStateDir, "s")
++		socketDir = filepath.Join(defaults.Prefix(defaults.DefaultStateDir), "s")
+ 	}
+ 	s, err := newShimSocket(ctx, socketDir, opts.GetContainerdGrpcAddress(), grouping, false)
+ 	if err != nil {
 @@ -316,7 +316,7 @@ func (manager) Stop(ctx context.Context, id string) (shim.StopStatus, error) {
  	if err != nil {
  		return shim.StopStatus{}, err

@@ -1,0 +1,11 @@
+diff --git a/core/runtime/v2/shim_windows.go b/core/runtime/v2/shim_windows.go
+index 2e860cb..41faa78 100644
+--- a/core/runtime/v2/shim_windows.go
++++ b/core/runtime/v2/shim_windows.go
+@@ -97,5 +97,5 @@ func checkCopyShimLogError(ctx context.Context, err error) error {
+ }
+ 
+ func defaultSocketDir() string {
+-	return filepath.Join(defaults.DefaultStateDir, "s")
++	return filepath.Join(defaults.Prefix(defaults.DefaultStateDir), "s")
+ }

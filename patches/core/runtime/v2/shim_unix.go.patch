@@ -1,0 +1,13 @@
+diff --git a/core/runtime/v2/shim_unix.go b/core/runtime/v2/shim_unix.go
+index f383ee7..70ec289 100644
+--- a/core/runtime/v2/shim_unix.go
++++ b/core/runtime/v2/shim_unix.go
+@@ -64,7 +64,7 @@ func checkCopyShimLogError(ctx context.Context, err error) error {
+ //     exists and is owned by the current user.
+ //  4. /tmp/containerd-s-<UID> — created and ownership-verified as a last resort.
+ func defaultSocketDir() string {
+-	defaultDir := filepath.Join(defaults.DefaultStateDir, "s")
++	defaultDir := filepath.Join(defaults.Prefix(defaults.DefaultStateDir), "s")
+ 	uid := os.Geteuid()
+ 	if uid == 0 {
+ 		return defaultDir
