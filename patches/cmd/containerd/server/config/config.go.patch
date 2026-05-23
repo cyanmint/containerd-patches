@@ -1,0 +1,93 @@
+diff --git a/cmd/containerd/server/config/config.go b/cmd/containerd/server/config/config.go
+index e1ce96d..214e87e 100644
+--- a/cmd/containerd/server/config/config.go
++++ b/cmd/containerd/server/config/config.go
+@@ -526,6 +526,79 @@ func LoadConfigWithPlugins(ctx context.Context, path string, plugins PluginFunc,
+ }
+ 
+ // loadConfigFile decodes a TOML file at the given path
++func configPrefixFromEnv() string {
++	if p := os.Getenv("CTR_PREFIX"); p != "" {
++		return p
++	}
++	return os.Getenv("PREFIX")
++}
++
++func expandPrefixVars(value, prefix string) string {
++	if prefix == "" {
++		return value
++	}
++	replacer := strings.NewReplacer(
++		"${CTR_PREFIX}", prefix,
++		"$CTR_PREFIX", prefix,
++		"${PREFIX}", prefix,
++		"$PREFIX", prefix,
++	)
++	return replacer.Replace(value)
++}
++
++func expandPrefixVarsInValue(v reflect.Value, prefix string) {
++	if !v.IsValid() {
++		return
++	}
++
++	switch v.Kind() {
++	case reflect.Pointer:
++		if !v.IsNil() {
++			expandPrefixVarsInValue(v.Elem(), prefix)
++		}
++	case reflect.Interface:
++		if v.IsNil() {
++			return
++		}
++		elem := v.Elem()
++		copy := reflect.New(elem.Type()).Elem()
++		copy.Set(elem)
++		expandPrefixVarsInValue(copy, prefix)
++		v.Set(copy)
++	case reflect.Struct:
++		for i := 0; i < v.NumField(); i++ {
++			field := v.Field(i)
++			if field.CanSet() {
++				expandPrefixVarsInValue(field, prefix)
++			}
++		}
++	case reflect.String:
++		if v.CanSet() {
++			v.SetString(expandPrefixVars(v.String(), prefix))
++		}
++	case reflect.Slice, reflect.Array:
++		for i := 0; i < v.Len(); i++ {
++			expandPrefixVarsInValue(v.Index(i), prefix)
++		}
++	case reflect.Map:
++		for _, key := range v.MapKeys() {
++			value := v.MapIndex(key)
++			copy := reflect.New(value.Type()).Elem()
++			copy.Set(value)
++			expandPrefixVarsInValue(copy, prefix)
++			v.SetMapIndex(key, copy)
++		}
++	}
++}
++
++func expandConfigPrefixVars(config *Config) {
++	prefix := configPrefixFromEnv()
++	if prefix == "" {
++		return
++	}
++	expandPrefixVarsInValue(reflect.ValueOf(config).Elem(), prefix)
++}
++
+ func loadConfigFile(ctx context.Context, path string) (*Config, error) {
+ 	config := &Config{}
+ 
+@@ -571,6 +644,8 @@ func loadConfigFile(ctx context.Context, path string) (*Config, error) {
+ 
+ 	}
+ 
++	expandConfigPrefixVars(config)
++
+ 	return config, nil
+ }
+ 
