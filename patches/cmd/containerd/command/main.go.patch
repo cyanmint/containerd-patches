@@ -2,29 +2,13 @@ diff --git a/cmd/containerd/command/main.go b/cmd/containerd/command/main.go
 index 3d03d38..03042a6 100644
 --- a/cmd/containerd/command/main.go
 +++ b/cmd/containerd/command/main.go
-@@ -122,6 +122,11 @@ can be used and modified as necessary as a custom configuration.`
- 			Name:  "state",
- 			Usage: "containerd state directory",
- 		},
-+		&cli.StringFlag{
-+			Name:    "prefix",
-+			Aliases: []string{"p"},
-+			Usage:   "Prefix directory for all containerd default paths",
-+		},
- 	}
- 	app.Flags = append(app.Flags, serviceFlags()...)
- 	app.Commands = []*cli.Command{
 @@ -134,12 +139,21 @@ can be used and modified as necessary as a custom configuration.`
  			return cli.ShowCommandHelp(cliContext, args.First())
  		}
  
-+		prefix := cliContext.String("prefix")
-+		// Set PathPrefix before any default-path computation so that all
-+		// subsystems (including plugins loaded later) see the same prefix.
-+		defaults.PathPrefix = prefix
 +		// On devices without /etc/resolv.conf (e.g. Android/Termux), Go's
 +		// DNS resolver falls back to unreachable defaults.  Override it to
-+		// use the nameservers from PREFIX/etc/resolv.conf instead.
++		// use the nameservers from <prefix>/etc/resolv.conf instead.
 +		defaults.ConfigureResolver()
 +
  		var (
@@ -33,7 +17,7 @@ index 3d03d38..03042a6 100644
  			serverC     = make(chan *server.Server, 1)
  			ctx, cancel = context.WithCancel(cliContext.Context)
 -			config      = defaultConfig()
-+			config      = defaultConfigWithPrefix(prefix)
++			config      = defaultConfigWithPrefix()
  		)
  
  		defer cancel()
@@ -41,8 +25,8 @@ index 3d03d38..03042a6 100644
  		// Only try to load the config if it either exists, or the user explicitly
  		// told us to load this path.
  		configPath := cliContext.String("config")
-+		if prefix != "" && !cliContext.IsSet("config") {
-+			configPath = filepath.Join(prefix, defaults.DefaultConfigDir, "config.toml")
++		if defaults.PathPrefix != "" && !cliContext.IsSet("config") {
++			configPath = filepath.Join(defaults.PathPrefix, defaults.DefaultConfigDir, "config.toml")
 +		}
  		_, err := os.Stat(configPath)
  		if !os.IsNotExist(err) || cliContext.IsSet("config") {

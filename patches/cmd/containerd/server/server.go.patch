@@ -14,7 +14,7 @@ index 08ea9ac..5f3626d 100644
 -		if err := sys.MkdirAllWithACL(defaults.DefaultStateDir, 0o711); err != nil {
 +	if config.State != defaults.Prefix(defaults.DefaultStateDir) {
 +		// XXX: socketRoot in pkg/shim is computed from defaults.Prefix(defaults.DefaultStateDir),
-+		// which equals the effective default state directory (accounting for --prefix).
++		// which equals the effective default state directory (accounting for PathPrefix).
 +		// The default fifo directory in pkg/cio is also computed similarly.
 +		// Make sure the effective default state directory is created with the correct permissions.
 +		if err := sys.MkdirAllWithACL(defaults.Prefix(defaults.DefaultStateDir), 0o711); err != nil {

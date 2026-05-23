@@ -8,20 +8,8 @@ BINARY="crun"                   # crun
 INJECT_FLAG="--cgroup-manager"  # cgroup
 INJECT_VAL="disabled"           # disabled
 
-PREFIX=""
-for arg do
-    shift
-    case "$arg" in
-        -p|--prefix)
-            PREFIX="$1"
-            shift 
-            continue
-            ;;
-        *)
-            set -- "$@" "$arg"
-            ;;
-    esac
-done
+PREFIX="${PREFIX:-}"
+[ -n "${CTR_PREFIX:-}" ] && PREFIX="${CTR_PREFIX}"
 
 TARGET=""
 if [ -n "$PREFIX" ]; then

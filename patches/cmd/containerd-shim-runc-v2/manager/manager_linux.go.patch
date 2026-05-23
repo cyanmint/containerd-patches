@@ -10,16 +10,6 @@ index 0e051a3..7025258 100644
  	"github.com/containerd/containerd/v2/pkg/namespaces"
  	"github.com/containerd/containerd/v2/pkg/schedcore"
  	"github.com/containerd/containerd/v2/pkg/shim"
-@@ -97,6 +98,9 @@ func newCommand(ctx context.Context, id, containerdAddress, containerdTTRPCAddre
- 		"-id", id,
- 		"-address", containerdAddress,
- 	}
-+	if defaults.PathPrefix != "" {
-+		args = append(args, "-prefix", defaults.PathPrefix)
-+	}
- 	if debug {
- 		args = append(args, "-debug")
- 	}
 @@ -301,7 +305,7 @@ func (manager) Stop(ctx context.Context, id string) (shim.StopStatus, error) {
  	if err != nil {
  		return shim.StopStatus{}, err

@@ -8,7 +8,7 @@ index d255d7f..7796e09 100644
  
 -const socketRoot = defaults.DefaultStateDir
 +// socketRoot returns the effective default state directory for shim sockets,
-+// accounting for any PathPrefix set via the --prefix flag.
++// accounting for any configured PathPrefix.
 +func socketRoot() string {
 +	return defaults.Prefix(defaults.DefaultStateDir)
 +}

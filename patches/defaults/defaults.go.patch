@@ -6,13 +6,23 @@ index fcf3ec6..ee2aebd 100644
  
  package defaults
  
-+import "path/filepath"
++import (
++	"os"
++	"path/filepath"
++)
 +
 +// PathPrefix is an optional prefix prepended to all default paths.
-+// It is set once at process startup (e.g. from the --prefix flag) and is
++// It is set once at process startup (from CTR_PREFIX or PREFIX env vars) and is
 +// never changed afterwards.  Code that computes default paths should call
 +// Prefix() rather than hard-coding the base path.
-+var PathPrefix string
++var PathPrefix = pathPrefixFromEnv()
++
++func pathPrefixFromEnv() string {
++	if p := os.Getenv("CTR_PREFIX"); p != "" {
++		return p
++	}
++	return os.Getenv("PREFIX")
++}
 +
 +// Prefix prepends PathPrefix to path.  If PathPrefix is empty the original
 +// path is returned unchanged.  An explicitly-configured value (i.e. one not

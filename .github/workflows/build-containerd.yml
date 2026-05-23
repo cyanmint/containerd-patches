@@ -1,4 +1,4 @@
-name: Build containerd with --prefix support
+name: Build containerd with env prefix support
 
 on:
   push:
@@ -66,20 +66,20 @@ jobs:
           go build -v -o /tmp/bin/containerd-shim-runc-v2 ./cmd/containerd-shim-runc-v2
           echo "shim binary: $(file /tmp/bin/containerd-shim-runc-v2)"
 
-      - name: Smoke-test --prefix / -p flag
+      - name: Smoke-test prefix flags are removed
         run: |
-          /tmp/bin/containerd --help | grep -q "\-\-prefix" && \
-            echo "containerd: --prefix flag present" || \
-            { echo "containerd: --prefix flag MISSING"; exit 1; }
-          /tmp/bin/containerd --help | grep -q ", -p" && \
-            echo "containerd: -p shorthand present" || \
-            { echo "containerd: -p shorthand MISSING"; exit 1; }
-          /tmp/bin/ctr --help | grep -q "\-\-prefix" && \
-            echo "ctr: --prefix flag present" || \
-            { echo "ctr: --prefix flag MISSING"; exit 1; }
-          /tmp/bin/ctr --help | grep -q ", -p" && \
-            echo "ctr: -p shorthand present" || \
-            { echo "ctr: -p shorthand MISSING"; exit 1; }
+          ! /tmp/bin/containerd --help | grep -q "\-\-prefix" && \
+            echo "containerd: --prefix flag absent" || \
+            { echo "containerd: --prefix flag still present"; exit 1; }
+          ! /tmp/bin/containerd --help | grep -q ", -p" && \
+            echo "containerd: -p shorthand absent" || \
+            { echo "containerd: -p shorthand still present"; exit 1; }
+          ! /tmp/bin/ctr --help | grep -q "\-\-prefix" && \
+            echo "ctr: --prefix flag absent" || \
+            { echo "ctr: --prefix flag still present"; exit 1; }
+          ! /tmp/bin/ctr --help | grep -q ", -p" && \
+            echo "ctr: -p shorthand absent" || \
+            { echo "ctr: -p shorthand still present"; exit 1; }
 
       - name: Stage runc→crun wrapper in artifact bin dir
         run: |
@@ -92,6 +92,6 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: containerd-prefix-binaries-${{ matrix.arch }}
+          name: containerd-env-prefix-binaries-${{ matrix.arch }}
           path: /tmp/bin/
           retention-days: 7

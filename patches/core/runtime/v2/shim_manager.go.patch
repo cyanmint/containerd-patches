@@ -14,9 +14,9 @@ index 637da90..f88ea7e 100644
  		cmdPath = binaryPath
  	}
  
-+	// If a path prefix is set (via --prefix), search the prefixed bin
++	// If a path prefix is set (via CTR_PREFIX/PREFIX env vars), search the prefixed bin
 +	// directories before falling back to the system PATH.  This ensures that
-+	// when containerd is started with e.g. --prefix /data/local/containerd the
++	// when containerd is started with e.g. CTR_PREFIX=/data/local/containerd the
 +	// shim from /data/local/containerd/usr/bin/ is preferred over any shim
 +	// found in the system PATH.
 +	if cmdPath == "" && defaults.PathPrefix != "" {

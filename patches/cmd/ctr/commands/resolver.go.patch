@@ -15,7 +15,7 @@ index baf86f6..563a6e0 100644
  			return nil, fmt.Errorf("failed to load TLS CAs from %q: invalid data", tlsRootPath)
  		}
 +	} else if pool := defaults.BuildCertPool(); pool != nil {
-+		// When --prefix is set and --tlscacert is not, load CA certificates
++		// When PathPrefix is set and --tlscacert is not, load CA certificates
 +		// from the prefixed paths (needed on Android/Termux where system certs
 +		// live under the prefix rather than at standard system paths).
 +		tlsConfig.RootCAs = pool
