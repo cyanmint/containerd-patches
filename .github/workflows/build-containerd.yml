@@ -93,6 +93,18 @@ jobs:
           ! /tmp/bin/ctr --help | grep -q ", -p" && \
             echo "ctr: -p shorthand absent" || \
             { echo "ctr: -p shorthand still present"; exit 1; }
+          # Verify the shim does NOT accept -prefix/-p as a CLI flag.
+          # Prefix is propagated exclusively via the CTR_PREFIX/PREFIX environment
+          # variables (inherited from the containerd daemon via os.Environ()).
+          ! /tmp/bin/containerd-shim-runc-v2 --help 2>&1 | grep -q "\-prefix" && \
+            echo "shim: -prefix flag absent (env-var only)" || \
+            { echo "ERROR: shim still registers -prefix CLI flag; must use CTR_PREFIX env var instead"; exit 1; }
+          # Sanity-check: starting the shim with -prefix must fail with
+          # "flag provided but not defined", proving it has no such flag.
+          out="$(/tmp/bin/containerd-shim-runc-v2 -prefix /tmp 2>&1 || true)"
+          echo "$out" | grep -q "flag provided but not defined" && \
+            echo "shim: -prefix correctly rejected (flag undefined)" || \
+            { echo "ERROR: shim accepted -prefix flag unexpectedly"; echo "$out"; exit 1; }
 
       - name: Stage runc→crun wrapper in artifact bin dir
         run: |
